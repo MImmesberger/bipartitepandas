@@ -170,7 +170,7 @@ class BipartiteLong(bpd.BipartiteLongBase):
                 with bpd.util.ChainedAssignment():
                     frame.loc[:, 't1'] = frame.loc[:, 't']
                     frame.loc[:, 't2'] = frame.loc[:, 't']
-                frame.drop('t', axis=1, inplace=True, allow_optional=True)
+                frame = frame.drop('t', axis=1, allow_optional=True)
 
             # Assign data_spell
             data_spell = frame
@@ -284,12 +284,12 @@ class BipartiteLong(bpd.BipartiteLongBase):
                                         data_spell.loc[:, subcol] = np.sqrt(data_spell.loc[:, subcol].to_numpy())
                 with bpd.util.ChainedAssignment():
                     # Drop added columns
-                    frame = frame.drop(weighted_cols, axis=1, inplace=True)
+                    frame = frame.drop(weighted_cols, axis=1)
 
             # Sort columns
             sorted_cols = bpd.util._sort_cols(data_spell.columns)
             data_spell = data_spell.reindex(sorted_cols, axis=1, copy=False)
-            data_spell.reset_index(drop=True, inplace=True)
+            data_spell = data_spell.reset_index(drop=True)
 
         self.log(f'data aggregated at the {level!r} level', level='info')
 
@@ -433,7 +433,7 @@ class BipartiteLong(bpd.BipartiteLongBase):
             spell_ids = self._get_spell_ids(is_sorted=True, copy=False)
             possible_articulation_spells['spell_id'] = spell_ids[possible_articulation_rows]
             articulation_rows = possible_articulation_spells.index.to_numpy()[possible_articulation_spells.groupby(['i', 'j'], sort=True)['spell_id'].transform('nunique').to_numpy() == 1]
-            possible_articulation_spells.drop('spell_id', axis=1, inplace=True)
+            possible_articulation_spells = possible_articulation_spells.drop('spell_id', axis=1)
 
         return articulation_rows
 
@@ -464,7 +464,7 @@ class BipartiteLong(bpd.BipartiteLongBase):
 
         # Sort, copy, reset index, and convert to Pandas dataframe
         frame = self.sort_rows(is_sorted=is_sorted, copy=copy)
-        frame.reset_index(drop=True, inplace=True)
+        frame = frame.reset_index(drop=True)
         frame = pd.DataFrame(frame, copy=False)
 
         # All included columns (minus i and t)
@@ -524,8 +524,8 @@ class BipartiteLong(bpd.BipartiteLongBase):
             frame = pd.concat([frame, data_filled])
 
             # Sort data by i, t
-            frame.sort_values(['i', 't'], inplace=True)
-            frame.reset_index(drop=True, inplace=True)
+            frame = frame.sort_values(['i', 't'])
+            frame = frame.reset_index(drop=True)
 
             # Sort columns
             sorted_cols = bpd.util._sort_cols(frame.columns)

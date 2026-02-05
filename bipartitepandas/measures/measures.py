@@ -48,9 +48,9 @@ class CDFs:
 
             # Force j and jids to be integers so np.bincount and indexing work correctly
             if jids.dtype == 'O':
-                jids = jids.astype(int, copy=True)
+                jids = jids.astype(int).copy()
             if j.dtype == 'O':
-                j = j.astype(int, copy=True)
+                j = j.astype(int).copy()
 
             # Get quantiles from all data
             quantile_groups = DescrStatsW(y, weights=w).quantile(quantiles, return_pandas=False)
@@ -68,8 +68,8 @@ class CDFs:
             # Sort frame by firm + compensation (do this once now, so that don't need to do it again later) (also note it is faster to sort and then manually compute quantiles than to use built-in quantile functions)
             # NOTE: don't sort in-place, otherwise modifies external data
             frame = frame.sort_values(['j', outcome_col], inplace=False)
-            frame.reset_index(drop=True, inplace=True)
-            frame.reset_index(drop=False, inplace=True)
+            frame = frame.reset_index(drop=True)
+            frame = frame.reset_index(drop=False)
 
             # Convert columns to NumPy (after sorting)
             y = frame.loc[:, outcome_col].to_numpy()
@@ -149,9 +149,9 @@ class Moments:
                 w = frame.loc[:, 'row_weights'].to_numpy()
                 # Force j and jids to be integers so np.bincount and indexing work correctly
                 if jids.dtype == 'O':
-                    jids = jids.astype(int, copy=True)
+                    jids = jids.astype(int).copy()
                 if j_.dtype == 'O':
-                    j_ = j_.astype(int, copy=True)
+                    j_ = j_.astype(int).copy()
                 moments[:, j] = np.bincount(j_, w * y)[jids] / np.bincount(j_, w)[jids]
                 del j_, y, w
             elif measure == 'var':

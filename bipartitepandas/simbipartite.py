@@ -339,7 +339,7 @@ class SimBipartite:
 
         # Generate size of spells
         dspell = data.groupby(['spell', 'k'], sort=False).size().to_frame(name='freq')
-        dspell.reset_index(inplace=True)
+        dspell = dspell.reset_index()
 
         # Draw firm ids
         dspell.loc[:, 'j'] = dspell.groupby('k')['freq'].transform(self._draw_fids, rng)

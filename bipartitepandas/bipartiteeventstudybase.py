@@ -53,7 +53,7 @@ class BipartiteEventStudyBase(bpd.BipartiteBase):
             frame = self
 
         if not frame._col_included('m') or force:
-            frame.loc[:, 'm'] = (frame.loc[:, 'j1'].to_numpy() != frame.loc[:, 'j2'].to_numpy()).astype(int, copy=False)
+            frame.loc[:, 'm'] = (frame.loc[:, 'j1'].to_numpy() != frame.loc[:, 'j2'].to_numpy()).astype(int)
             # frame.loc[:, 'm'] = frame.groupby('i')['m'].transform('max')
 
             # Sort columns
@@ -100,7 +100,7 @@ class BipartiteEventStudyBase(bpd.BipartiteBase):
             tqdm.write('converting data to long format')
         frame = frame.to_long(is_clean=False, drop_no_split_columns=False, is_sorted=params['is_sorted'], copy=False)
 
-        frame.drop_duplicates(inplace=True)
+        frame = frame.drop_duplicates()
 
         frame = frame.clean(params_copy)
 
@@ -212,7 +212,7 @@ class BipartiteEventStudyBase(bpd.BipartiteBase):
             # Drop i-t duplicates for long data, then convert back to event study (note: we use is_clean=False because duplicates mean that we should fully unstack all observations, to see which are duplicates and which are legitimate - setting is_clean=True would arbitrarily decide which rows are already correct)
             frame = frame.to_long(is_clean=False, drop_no_split_columns=False, is_sorted=is_sorted, copy=False)
 
-            frame.drop_duplicates(inplace=True)
+            frame = frame.drop_duplicates()
 
             frame = frame._drop_i_t_duplicates(how, is_sorted=True, copy=False).to_eventstudy(is_sorted=True, copy=False)
 
@@ -346,21 +346,21 @@ class BipartiteEventStudyBase(bpd.BipartiteBase):
         else:
             # If data isn't clean, just unstack all moves and deal with duplicates later
             unstack_df = pd.DataFrame(frame.loc[frame.get_worker_m(is_sorted=True), :])
-        unstack_df.rename(rename_dict_1, axis=1, inplace=True)
+        unstack_df = unstack_df.rename(rename_dict_1, axis=1)
 
         try:
             data_long = pd.concat([pd.DataFrame(frame), unstack_df], ignore_index=True)
-            data_long.drop(drops, axis=1, inplace=True)
-            data_long.rename(rename_dict_2, axis=1, inplace=True)
-            data_long = data_long.astype(astype_dict, copy=False)
+            data_long = data_long.drop(drops, axis=1)
+            data_long = data_long.rename(rename_dict_2, axis=1)
+            data_long = data_long.astype(astype_dict)
         except ValueError:
             # If nan values, use Int64
             for col in astype_dict.keys():
                 astype_dict[col] = 'Int64'
             data_long = pd.concat([pd.DataFrame(frame), unstack_df], ignore_index=True)
-            data_long.drop(drops, axis=1, inplace=True)
-            data_long.rename(rename_dict_2, axis=1, inplace=True)
-            data_long = data_long.astype(astype_dict, copy=False)
+            data_long = data_long.drop(drops, axis=1)
+            data_long = data_long.rename(rename_dict_2, axis=1)
+            data_long = data_long.astype(astype_dict)
 
         ## Final steps ##
         # Sort columns
@@ -396,7 +396,7 @@ class BipartiteEventStudyBase(bpd.BipartiteBase):
         long_frame = long_frame.sort_rows(is_sorted=False, copy=False)
 
         # Reset index
-        long_frame.reset_index(drop=True, inplace=True)
+        long_frame = long_frame.reset_index(drop=True)
 
         # Generate 'm' column
         long_frame = long_frame.gen_m(force=True, copy=False)

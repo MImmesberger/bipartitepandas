@@ -57,7 +57,7 @@ class BipartiteExtendedEventStudyBase(bpd.BipartiteBase):
             m = (frame.loc[:, 'j1'].to_numpy() != frame.loc[:, 'j2'].to_numpy())
             for j_subcol in self.col_reference_dict['j'][2:]:
                 m = (frame.loc[:, 'j1'].to_numpy() != frame.loc[:, j_subcol].to_numpy())
-            frame.loc[:, 'm'] = m.astype(int, copy=False)
+            frame.loc[:, 'm'] = m.astype(int)
 
             # Sort columns
             frame = frame.sort_cols(copy=False)
@@ -176,7 +176,7 @@ class BipartiteExtendedEventStudyBase(bpd.BipartiteBase):
             # Drop i-t duplicates for long data, then convert back to event study (note: we use is_clean=False because duplicates mean that we should fully unstack all observations, to see which are duplicates and which are legitimate - setting is_clean=True would arbitrarily decide which rows are already correct)
             frame = frame.to_long(is_clean=False, drop_no_split_columns=False, is_sorted=is_sorted, copy=False)
 
-            frame.drop_duplicates(inplace=True)
+            frame = frame.drop_duplicates()
 
             frame = frame._drop_i_t_duplicates(how, is_sorted=True, copy=False).to_extendedeventstudy(periods_pre=len(self.col_reference_dict['j']), periods_post=0, is_sorted=True, copy=False)
 
@@ -257,7 +257,7 @@ class BipartiteExtendedEventStudyBase(bpd.BipartiteBase):
 
         ## Final steps ##
         # Drop duplicates
-        data_long.drop_duplicates(inplace=True)
+        data_long = data_long.drop_duplicates()
         # Sort columns
         sorted_cols = bpd.util._sort_cols(data_long.columns)
         data_long = data_long.reindex(sorted_cols, axis=1, copy=False)
@@ -291,7 +291,7 @@ class BipartiteExtendedEventStudyBase(bpd.BipartiteBase):
         long_frame = long_frame.sort_rows(is_sorted=False, copy=False)
 
         # Reset index
-        long_frame.reset_index(drop=True, inplace=True)
+        long_frame = long_frame.reset_index(drop=True)
 
         # Generate 'm' column
         long_frame = long_frame.gen_m(force=True, copy=False)
