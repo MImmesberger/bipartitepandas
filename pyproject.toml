@@ -78,7 +78,7 @@ convention = "google"
 [tool.pytest.ini_options]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
 filterwarnings = ["error"]
-minversion = "8.0"
+minversion = "7.0"
 testpaths = ["tests"]
 xfail_strict = true
 

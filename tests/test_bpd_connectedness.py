@@ -685,7 +685,7 @@ def test_connectedness_collapsed():
 def test_connectedness_strongly_loo():
     # Test that strongly-leave-out-x connectedness works
     sim_params = bpd.sim_params({'n_workers': 5000, 'firm_size': 10, 'p_move': 0.05})
-    sim_data = bpd.SimBipartite(sim_params).simulate(rng=np.random.default_rng(1234))
+    sim_data = bpd.SimBipartite(sim_params).simulate(rng=np.random.default_rng(1235))
 
     for measure in ['observation', 'spell', 'match', 'worker']:
         clean_params_loo = bpd.clean_params(

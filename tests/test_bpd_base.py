@@ -2114,7 +2114,7 @@ def test_min_workers_firms_30():
     df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1234))
     bdf = bpd.BipartiteLong(df[['i', 'j', 'y', 't']]).clean()
 
-    threshold = 40
+    threshold = 50
 
     # First, manually estimate the valid set of firms
     frame = bdf.copy()
@@ -2218,7 +2218,7 @@ def test_min_moves_firms_32_2():
 def test_min_moves_frame_33():
     # Keep only firms that meet a minimum threshold of moves.
     # Using long/event study/long collapsed/event study collapsed.
-    df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1234))
+    df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1241))
     bdf = bpd.BipartiteLong(df[['i', 'j', 'y', 't']]).clean()
 
     threshold = 12

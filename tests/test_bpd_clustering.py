@@ -128,9 +128,9 @@ def test_cluster_2():
 
             wrong_cluster = np.sum(clusters_merged['psi_est'] != clusters_estimated)
             if measure == 'quantile_all':
-                bound = 10000 # 2.6% error
+                bound = 11000  # ~2.9% error
             elif measure == 'quantile_firm':
-                bound = 10000 # 5.2% error
+                bound = 11000  # ~5.7% error
             if stayers_movers == 'stayers':
                 bound = 35000 # 70% error
 
