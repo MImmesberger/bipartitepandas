@@ -61,7 +61,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
             j_next = np.roll(j_col, -1)
 
             with bpd.util.ChainedAssignment():
-                frame.loc[:, 'm'] = ((i_col == i_prev) & (j_col != j_prev)).astype(int, copy=False) + ((i_col == i_next) & (j_col != j_next)).astype(int, copy=False)
+                frame.loc[:, 'm'] = ((i_col == i_prev) & (j_col != j_prev)).astype(int) + ((i_col == i_next) & (j_col != j_next)).astype(int)
 
             # Sort columns
             frame = frame.sort_cols(copy=False)
@@ -116,7 +116,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
                 tqdm.write('dropping NaN observations')
             if frame.isna().to_numpy().any():
                 # Checking first is considerably faster if there are no NaN observations
-                frame.dropna(inplace=True)
+                frame = frame.dropna()
 
             # Update no_na
             frame.no_na = True
@@ -141,7 +141,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
             self.log('dropping duplicate observations', level='info')
             if verbose:
                 tqdm.write('dropping duplicate observations')
-            frame.drop_duplicates(inplace=True)
+            frame = frame.drop_duplicates()
 
             # Update no_duplicates
             frame.no_duplicates = True
@@ -187,7 +187,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         self.log('resetting index', level='info')
         if verbose:
             tqdm.write('resetting index')
-        frame.reset_index(drop=True, inplace=True)
+        frame = frame.reset_index(drop=True)
 
         self.log('BipartiteLongBase data cleaning complete', level='info')
 
@@ -241,12 +241,12 @@ class BipartiteLongBase(bpd.BipartiteBase):
                     # Lagged value
                     with bpd.util.ChainedAssignment():
                         movers.loc[:, col_1] = bpd.util.fast_shift(movers.loc[:, subcol].to_numpy(), 1, fill_value=-2)
-                    movers.rename({subcol: col_2}, axis=1, inplace=True)
+                    movers = movers.rename({subcol: col_2}, axis=1)
 
                     if subcol != 'i':
                         ## Stayers (no lags) ##
                         stayers.loc[:, col_1] = stayers.loc[:, subcol]
-                        stayers.rename({subcol: col_2}, axis=1, inplace=True)
+                        stayers = stayers.rename({subcol: col_2}, axis=1)
 
                         # Columns to keep
                         keep_cols += [col_1, col_2]
@@ -280,8 +280,8 @@ class BipartiteLongBase(bpd.BipartiteBase):
         #             movers.loc[:, shifted_col] = movers.loc[:, shifted_col].astype(int, copy=False)
 
         # Correct i
-        movers.drop('i2', axis=1, inplace=True)
-        movers.rename({'i1': 'i'}, axis=1, inplace=True)
+        movers = movers.drop('i2', axis=1)
+        movers = movers.rename({'i1': 'i'}, axis=1)
 
         # Keep only relevant columns
         stayers = stayers.reindex(keep_cols, axis=1, copy=False)
@@ -318,7 +318,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         es_frame = es_frame.sort_rows(is_sorted=False, copy=False)
 
         # Reset index
-        es_frame.reset_index(drop=True, inplace=True)
+        es_frame = es_frame.reset_index(drop=True)
 
         if move_to_worker:
             es_frame.loc[:, 'i'] = es_frame.index
@@ -414,12 +414,12 @@ class BipartiteLongBase(bpd.BipartiteBase):
         diff_j = data_ees.loc[:, 'j1'].to_numpy() != data_ees.loc[:, 'j2'].to_numpy()
         for t in range(3, n_periods + 1):
             diff_j = diff_j | (data_ees.loc[:, 'j1'].to_numpy() != data_ees.loc[:, f'j{t}'].to_numpy())
-        data_ees.loc[:, 'm'] = diff_j.astype(int, copy=False)
+        data_ees.loc[:, 'm'] = diff_j.astype(int)
         del diff_j
 
         # Correct i
-        data_ees.drop([f'i{t}' for t in range(2, n_periods + 1)], axis=1, inplace=True)
-        data_ees.rename({'i1': 'i'}, axis=1, inplace=True)
+        data_ees = data_ees.drop([f'i{t}' for t in range(2, n_periods + 1)], axis=1)
+        data_ees = data_ees.rename({'i1': 'i'}, axis=1)
 
         # Sort columns
         sorted_cols = bpd.util._sort_cols(data_ees.columns)
@@ -492,7 +492,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         ees_frame = ees_frame.sort_rows(is_sorted=False, copy=False)
 
         # Reset index
-        ees_frame.reset_index(drop=True, inplace=True)
+        ees_frame = ees_frame.reset_index(drop=True)
 
         if move_to_worker:
             ees_frame.loc[:, 'i'] = ees_frame.index
@@ -559,7 +559,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         frame.loc[:, 'spell_id'] = frame._get_spell_ids(is_sorted=True, copy=False)
 
         # Find returns
-        frame.loc[:, 'return_row'] = (frame.groupby(['i', 'j'], sort=False)['spell_id'].transform('nunique') > 1).astype(int, copy=False)
+        frame.loc[:, 'return_row'] = (frame.groupby(['i', 'j'], sort=False)['spell_id'].transform('nunique') > 1).astype(int)
 
         # Check whether there are already no returns, or if we aren't dropping returns
         no_returns = (frame.loc[:, 'return_row'].sum() == 0)
@@ -568,7 +568,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
             frame.no_returns = no_returns
 
             # Drop columns
-            frame = frame.drop(['spell_id', 'return_row'], axis=1, inplace=True)
+            frame = frame.drop(['spell_id', 'return_row'], axis=1)
 
             return frame
         del no_returns
@@ -594,7 +594,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         return_rows = np.where(frame.loc[:, 'return_row'].to_numpy() == 1)[0]
 
         # Drop columns (before drop rows)
-        frame = frame.drop(['spell_id', 'return_row'], axis=1, inplace=True)
+        frame = frame.drop(['spell_id', 'return_row'], axis=1)
 
         # Drop returns
         frame = frame.drop_rows(return_rows, drop_returns_to_stays=False, is_sorted=True, reset_index=reset_index, copy=False)
@@ -1050,7 +1050,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
             frame = frame.copy()
 
         if reset_index:
-            frame.reset_index(drop=True, inplace=True)
+            frame = frame.reset_index(drop=True)
 
         return frame
 
@@ -1095,7 +1095,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
             frame = frame.copy()
 
         if reset_index:
-            frame.reset_index(drop=True, inplace=True)
+            frame = frame.reset_index(drop=True)
 
         return frame
 
@@ -1133,7 +1133,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         frame = frame.gen_m(force=True, copy=copy)
 
         if reset_index:
-            frame.reset_index(drop=True, inplace=True)
+            frame = frame.reset_index(drop=True)
 
         return frame
 
@@ -1195,7 +1195,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         # Recompute 'm' since it might change from dropping observations or from re-collapsing
         frame = frame.gen_m(force=True, copy=copy)
 
-        frame.reset_index(drop=True, inplace=True)
+        frame = frame.reset_index(drop=True)
 
         return frame
 
@@ -1287,7 +1287,7 @@ class BipartiteLongBase(bpd.BipartiteBase):
         # Recompute 'm' since it might change from dropping observations or from re-collapsing
         frame = frame.gen_m(force=True, copy=copy)
 
-        frame.reset_index(drop=True, inplace=True)
+        frame = frame.reset_index(drop=True)
 
         return frame
 

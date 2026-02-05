@@ -6,11 +6,22 @@ from paramsdict.util import _is_subdtype
 import numpy as np
 import pandas as pd
 DataFrame = pd.DataFrame
-try:
-    _fast_zip = pd._libs.lib.fast_zip
-except AttributeError:
-    # Older versions of Pandas have fast_zip in a different location
-    _fast_zip = pd._lib.fast_zip
+
+def _get_fast_zip():
+    """Get fast_zip function with fallback to Python implementation."""
+    try:
+        from pandas._libs.lib import fast_zip
+        return fast_zip
+    except (ImportError, AttributeError):
+        try:
+            from pandas._lib import fast_zip
+            return fast_zip
+        except (ImportError, AttributeError):
+            def fast_zip(arrays):
+                return list(zip(*arrays))
+            return fast_zip
+
+_fast_zip = _get_fast_zip()
 from igraph import Graph
 from sklearn.metrics import silhouette_samples
 import warnings
@@ -692,7 +703,7 @@ class BipartiteBase(DataFrame):
                             frame = frame.merge(reference_df.loc[:, ['original_ids', f'adjusted_ids_{len(reference_df.columns) - 1}']].rename({'original_ids': f'original_{id_subcol}', f'adjusted_ids_{len(reference_df.columns) - 1}': id_subcol}, axis=1), how='left', on=id_subcol)
                         except TypeError:
                             # Int64 error with NaNs
-                            frame.loc[:, id_col] = frame.loc[:, id_col].astype('Int64', copy=False)
+                            frame.loc[:, id_col] = frame.loc[:, id_col].astype('Int64')
                             frame = frame.merge(reference_df.loc[:, ['original_ids', f'adjusted_ids_{len(reference_df.columns) - 1}']].rename({'original_ids': f'original_{id_subcol}', f'adjusted_ids_{len(reference_df.columns) - 1}': id_subcol}, axis=1), how='left', on=id_subcol)
                 # else:
                 #     # If no changes, just make original_id be the same as the current id
@@ -1133,7 +1144,7 @@ class BipartiteBase(DataFrame):
             else:
                 # Merge in new adjustment step
                 n_cols_id = len(frame.id_reference_dict[id_col].columns)
-                id_reference_df = DataFrame({'adjusted_ids_' + str(n_cols_id - 1): factorized[1], 'adjusted_ids_' + str(n_cols_id): np.arange(len(factorized[1]))}, index=np.arange(len(factorized[1]))).astype('Int64', copy=False)
+                id_reference_df = DataFrame({'adjusted_ids_' + str(n_cols_id - 1): factorized[1], 'adjusted_ids_' + str(n_cols_id): np.arange(len(factorized[1]))}, index=np.arange(len(factorized[1]))).astype('Int64')
                 frame.id_reference_dict[id_col] = frame.id_reference_dict[id_col].merge(id_reference_df, how='left', on='adjusted_ids_' + str(n_cols_id - 1))
 
         # Sort columns
@@ -1387,7 +1398,7 @@ class BipartiteBase(DataFrame):
                 # If no t column, and choose to sort on j instead
                 sort_order.append(to_list(frame.col_reference_dict['j'])[0])
             with bpd.util.ChainedAssignment():
-                frame.sort_values(sort_order, inplace=True)
+                frame = frame.sort_values(sort_order)
 
         return frame
 
@@ -1492,13 +1503,13 @@ class BipartiteBase(DataFrame):
         # Drop columns (because prepared data is not always a copy, must drop from self)
         for col in ['row_weights', 'one']:
             if col in self.columns:
-                self.drop(col, axis=1, inplace=True)
+                self.drop(col, axis=1)
             if col in frame.columns:
-                frame.drop(col, axis=1, inplace=True)
+                frame = frame.drop(col, axis=1)
 
         # Drop existing clusters
         if frame._col_included('g'):
-            frame.drop('g', axis=1, inplace=True)
+            frame = frame.drop('g', axis=1)
 
         j_cols = to_list(frame.col_reference_dict['j'])
         for i, j_col in enumerate(j_cols):
@@ -1510,16 +1521,16 @@ class BipartiteBase(DataFrame):
             # Merge into event study data
             frame.loc[:, g_col] = frame.loc[:, j_col].map(clusters_dict)
             # Keep column as int even with nans
-            frame.loc[:, g_col] = frame.loc[:, g_col].astype('Int64', copy=False)
+            frame.loc[:, g_col] = frame.loc[:, g_col].astype('Int64')
 
         # Sort columns
         frame = frame.sort_cols(copy=False)
 
         if params['dropna']:
             # Drop firms that don't get clustered
-            frame.dropna(inplace=True)
-            frame.reset_index(drop=True, inplace=True)
-            frame.loc[:, frame.col_reference_dict['g']] = frame.loc[:, frame.col_reference_dict['g']].astype(int, copy=False)
+            frame = frame.dropna()
+            frame = frame.reset_index(drop=True)
+            frame.loc[:, frame.col_reference_dict['g']] = frame.loc[:, frame.col_reference_dict['g']].astype(int)
             # Clean data
             if params['clean_params'] is None:
                 frame = frame.clean(bpd.clean_params({'connectedness': frame.connectedness}))

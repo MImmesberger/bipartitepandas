@@ -204,12 +204,12 @@ class BipartiteLongCollapsed(bpd.BipartiteLongBase):
                                 data_spell.loc[:, subcol] /= w_sum
                 with bpd.util.ChainedAssignment():
                     # Drop added columns
-                    frame = frame.drop(weighted_cols, axis=1, inplace=True)
+                    frame = frame.drop(weighted_cols, axis=1)
 
         # Sort columns
         sorted_cols = bpd.util._sort_cols(data_spell.columns)
         data_spell = data_spell.reindex(sorted_cols, axis=1, copy=False)
-        data_spell.reset_index(drop=True, inplace=True)
+        data_spell = data_spell.reset_index(drop=True)
 
         self.log('data aggregated at the spell level', level='info')
 
@@ -386,11 +386,11 @@ class BipartiteLongCollapsed(bpd.BipartiteLongBase):
                 if frame._col_included('w'):
                     movers.loc[:, 'weighted_y'] = movers.loc[:, 'w'].to_numpy() * movers.loc[:, 'y'].to_numpy()
                     movers['mean_y'] = movers.groupby('i')['weighted_y'].transform('sum') / movers.groupby('i')['w'].transform('sum')
-                    movers.drop('weighted_y', axis=1, inplace=True)
+                    movers = movers.drop('weighted_y', axis=1)
                 else:
                     movers['mean_y'] = movers.groupby('i')['y'].transform('mean')
-                movers.sort_values('mean_y', inplace=True)
-                movers.drop('mean_y', axis=1, inplace=True)
+                movers = movers.sort_values('mean_y')
+                movers = movers.drop('mean_y', axis=1)
 
         # Initial data construction
         j = movers.loc[:, 'j'].to_numpy()
@@ -479,7 +479,7 @@ class BipartiteLongCollapsed(bpd.BipartiteLongBase):
                     if subcol != 'i':
                         ## Stayers (no lags) ##
                         stayers.loc[:, col_1] = stayers.loc[:, subcol]
-                        stayers.rename({subcol: col_2}, axis=1, inplace=True)
+                        stayers = stayers.rename({subcol: col_2}, axis=1)
 
                         # Columns to keep
                         keep_cols += [col_1, col_2]
@@ -509,11 +509,11 @@ class BipartiteLongCollapsed(bpd.BipartiteLongBase):
                     # Get column number, e.g. j1 will give 1
                     subcol_number = subcol.strip(col)
                     shifted_col = col + '1' + subcol_number
-                    movers_permuted.loc[:, shifted_col] = movers_permuted.loc[:, shifted_col].astype(int, copy=False)
+                    movers_permuted.loc[:, shifted_col] = movers_permuted.loc[:, shifted_col].astype(int)
 
         # Correct i
-        movers_permuted.drop('i2', axis=1, inplace=True)
-        movers_permuted.rename({'i1': 'i'}, axis=1, inplace=True)
+        movers_permuted = movers_permuted.drop('i2', axis=1)
+        movers_permuted = movers_permuted.rename({'i1': 'i'}, axis=1)
 
         # Keep only relevant columns
         stayers = stayers.reindex(keep_cols, axis=1, copy=False)
@@ -550,7 +550,7 @@ class BipartiteLongCollapsed(bpd.BipartiteLongBase):
         es_frame = es_frame.sort_rows(is_sorted=False, copy=False)
 
         # Reset index
-        es_frame.reset_index(drop=True, inplace=True)
+        es_frame = es_frame.reset_index(drop=True)
 
         if move_to_worker:
             es_frame.loc[:, 'i'] = es_frame.index

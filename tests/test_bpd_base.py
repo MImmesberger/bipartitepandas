@@ -1206,7 +1206,7 @@ def test_copy_19():
 
     # Long
     bdf = bpd.BipartiteLong(data=df)
-    bdf = bdf.clean().drop('m', axis=1, inplace=True, allow_optional=True)
+    bdf = bdf.clean().drop('m', axis=1, allow_optional=True)
     bdf2 = bdf.copy()
     bdf2 = bdf2.gen_m(copy=False)
 
@@ -1214,7 +1214,7 @@ def test_copy_19():
 
     # Event study
     bdf = bdf.gen_m(copy=False).to_eventstudy()
-    bdf = bdf.clean().drop('m', axis=1, inplace=True, allow_optional=True)
+    bdf = bdf.clean().drop('m', axis=1, allow_optional=True)
     bdf2 = bdf.copy()
     bdf2 = bdf2.gen_m(copy=False)
 
@@ -1222,7 +1222,7 @@ def test_copy_19():
 
     # Collapsed long
     bdf = bdf.gen_m(copy=False).to_long().collapse()
-    bdf = bdf.clean().drop('m', axis=1, inplace=True, allow_optional=True)
+    bdf = bdf.clean().drop('m', axis=1, allow_optional=True)
     bdf2 = bdf.copy()
     bdf2 = bdf2.gen_m(copy=False)
 
@@ -1230,7 +1230,7 @@ def test_copy_19():
 
     # Collapsed event study
     bdf = bdf.gen_m(copy=False).to_eventstudy()
-    bdf = bdf.clean().drop('m', axis=1, inplace=True, allow_optional=True)
+    bdf = bdf.clean().drop('m', axis=1, allow_optional=True)
     bdf2 = bdf.copy()
     bdf2 = bdf2.gen_m(copy=False)
 
@@ -2036,7 +2036,7 @@ def test_min_obs_frame_29_1():
 
     valid_firms = sorted(n_moves[n_moves >= threshold].index)
     new_frame = frame.keep_ids('j', valid_firms)
-    new_frame.reset_index(drop=True, inplace=True)
+    new_frame = new_frame.reset_index(drop=True)
 
     # Next, estimate the new frame using the built-in function
     new_frame2 = bdf.min_obs_frame(threshold=threshold, id_col='j')
@@ -2114,7 +2114,7 @@ def test_min_workers_firms_30():
     df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1234))
     bdf = bpd.BipartiteLong(df[['i', 'j', 'y', 't']]).clean()
 
-    threshold = 40
+    threshold = 50
 
     # First, manually estimate the valid set of firms
     frame = bdf.copy()
@@ -2218,7 +2218,7 @@ def test_min_moves_firms_32_2():
 def test_min_moves_frame_33():
     # Keep only firms that meet a minimum threshold of moves.
     # Using long/event study/long collapsed/event study collapsed.
-    df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1234))
+    df = bpd.SimBipartite(bpd.sim_params({'p_move': 0.05})).simulate(np.random.default_rng(1241))
     bdf = bpd.BipartiteLong(df[['i', 'j', 'y', 't']]).clean()
 
     threshold = 12
