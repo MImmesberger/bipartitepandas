@@ -1,0 +1,31 @@
+[project]
+name = "bipartitepandas"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[dependencies]
+python = ">=3.13"
+
+[feature.dev.dependencies]
+pre-commit = ">=3.5"
+pytest = ">=8.0"
+pytest-cov = ">=4.0"
+ruff = ">=0.8"
+
+[feature.docs.dependencies]
+nbsphinx = ">=0.9"
+sphinx = ">=7.0"
+sphinx-rtd-theme = ">=2.0"
+
+[environments]
+default = { features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+
+[tasks]
+tests = "pytest tests/ -v"
+lint = "ruff check src/ tests/"
+format = "ruff format src/ tests/"
+format-check = "ruff format --check src/ tests/"
+
+[activation.env]
+PYTHONPATH = "src"
